@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSA Encryption GUI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>RSA Encryption</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Generate Keys and Encrypt</button>
+    </form>
+
+    {% if private_key and public_key and encrypted_message %}
+    <div class="results">
+        <h2>Results:</h2>
+        <p><strong>Private Key:</strong> p = {{ private_key.p }}, q = {{ private_key.q }}</p>
+        <p><strong>Public Key:</strong> n = {{ public_key.n }}</p>
+        <h3>Encrypted Message:</h3>
+        <ul>
+            {% for item in encrypted_message %}
+                <li>
+                    Character: {{ item.character }},
+                    m: {{ item.m }},
+                    Ciphertext (c): {{ item.ciphertext }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</body>
+</html>
