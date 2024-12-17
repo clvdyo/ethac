@@ -2,61 +2,59 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RSA Encryption GUI</title>
+    <title>Enkripsi & Brute Force</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        form {
-            margin-bottom: 20px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .results {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            background-color: #f9f9f9;
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2 { color: #333; }
+        form { margin-bottom: 20px; }
+        button { background-color: #4CAF50; color: white; border: none; padding: 10px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        .results { margin-top: 20px; padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; }
     </style>
 </head>
 <body>
-    <h1>RSA Encryption</h1>
+
+    <!-- Form Enkripsi -->
+    <h2>Enkripsi Pesan</h2>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Generate Keys and Encrypt</button>
+        {{ encryption_form.as_p }}
+        <button type="submit" name="encryption_submit">Generate Keys & Enkripsi</button>
     </form>
 
-    {% if private_key and public_key and encrypted_message %}
-    <div class="results">
-        <h2>Results:</h2>
-        <p><strong>Private Key:</strong> p = {{ private_key.p }}, q = {{ private_key.q }}</p>
-        <p><strong>Public Key:</strong> n = {{ public_key.n }}</p>
-        <h3>Encrypted Message:</h3>
-        <ul>
-            {% for item in encrypted_message %}
-                <li>
-                    Character: {{ item.character }},
-                    m: {{ item.m }},
-                    Ciphertext (c): {{ item.ciphertext }}
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
+    {% if encryption_result %}
+        <div class="results">
+            <h3>Hasil Enkripsi</h3>
+            <p><strong>Private Key:</strong> p = {{ encryption_result.private_key.p }}, q = {{ encryption_result.private_key.q }}</p>
+            <p><strong>Public Key:</strong> n = {{ encryption_result.public_key.n }}</p>
+            <h4>Pesan Terenkripsi:</h4>
+            <ul>
+                {% for item in encryption_result.encrypted_message %}
+                    <li>Karakter: {{ item.0 }}, m: {{ item.1 }}, Ciphertext: {{ item.2 }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <hr>
+
+    <!-- Form Brute Force -->
+    <h2>Brute Force Faktorisasi</h2>
+    <form method="post" autocomplete="off">
+        {% csrf_token %}
+        {{ brute_force_form.as_p }}
+        <button type="submit" name="brute_force_submit">Faktorisasi</button>
+    </form>
+
+    {% if brute_force_result %}
+        <div class="results">
+            <h3>Hasil Faktorisasi</h3>
+            {% if brute_force_result.error %}
+                <p>{{ brute_force_result.error }}</p>
+            {% else %}
+                <p><strong>p:</strong> {{ brute_force_result.p }}, <strong>q:</strong> {{ brute_force_result.q }}</p>
+            {% endif %}
+        </div>
     {% endif %}
 </body>
 </html>
