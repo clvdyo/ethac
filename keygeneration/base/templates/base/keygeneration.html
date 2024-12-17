@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prime Generation</title>
+</head>
+<body>
+    <h1>Prime Key Generation</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="bit_length">Bit Length:</label>
+        <input type="number" id="bit_length" name="bit_length" required>
+        <button type="submit">Generate Primes</button>
+    </form>
+
+    {% if p and q and n %}
+        <h2>Generated Keys</h2>
+        <p>
+            <strong>Private Key:</strong> p: {{ p }}, q: {{ q }}</p>
+        <p><strong>Public Key:</strong> n: {{ n }}</p>
+    {% endif %}
+</body>
+</html>
