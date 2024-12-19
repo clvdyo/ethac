@@ -14,19 +14,20 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            background: linear-gradient(135deg, #FDF7F4, #8EB486);
+            color: #685752;
             margin: 20px;
             padding: 20px;
         }
 
         h1, h2 {
-            color: #333;
-            margin-bottom: 20px;
+            color: #685752;
             text-align: center;
+            margin-bottom: 20px;
         }
 
         form {
-            background: #fff;
+            background: #FDF7F4;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -35,6 +36,7 @@
 
         form label {
             font-weight: bold;
+            color: #685752;
             display: block;
             margin-bottom: 8px;
         }
@@ -43,14 +45,15 @@
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
-            border: 1px solid #ccc;
+            border: 1px solid #997C70;
             border-radius: 4px;
             font-size: 16px;
+            background: #FFF;
         }
 
         form button {
-            background-color: #4CAF50;
-            color: white;
+            background-color: #8EB486;
+            color: #FDF7F4;
             padding: 10px 15px;
             font-size: 16px;
             border: none;
@@ -60,20 +63,21 @@
         }
 
         form button:hover {
-            background-color: #45a049;
+            background-color: #997C70;
         }
 
         .results {
-            background: #fff;
+            background: #FDF7F4;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin-top: 20px;
+            border-left: 8px solid #8EB486;
         }
 
         .results h3 {
             margin-bottom: 15px;
-            color: #555;
+            color: #997C70;
         }
 
         .results ul {
@@ -84,13 +88,17 @@
         .results ul li {
             margin-bottom: 10px;
             font-size: 14px;
-            color: #333;
+            color: #685752;
+        }
+
+        .results p {
+            color: #685752;
         }
 
         hr {
             border: none;
             height: 1px;
-            background: #ddd;
+            background: #997C70;
             margin: 30px 0;
         }
 
@@ -98,12 +106,22 @@
             text-align: center;
             margin-top: 40px;
             font-size: 14px;
-            color: #888;
+            color: #685752;
         }
 
         .container {
             max-width: 800px;
             margin: 0 auto;
+        }
+
+        .highlight {
+            color: #8EB486;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #997C70;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -120,17 +138,33 @@
         </form>
 
         {% if encryption_result %}
-            <div class="results">
-                <h3>Hasil Enkripsi</h3>
-                <p><strong>Private Key:</strong> p = {{ encryption_result.private_key.p }}, q = {{ encryption_result.private_key.q }}</p>
-                <p><strong>Public Key:</strong> n = {{ encryption_result.public_key.n }}</p>
-                <h4>Pesan Terenkripsi:</h4>
-                <ul>
-                    {% for item in encryption_result.encrypted_message %}
-                        <li>Karakter: {{ item.0 }}, m: {{ item.1 }}, Ciphertext: {{ item.2 }}</li>
-                    {% endfor %}
-                </ul>
+            <div class="results" style="margin-top: 20px; background-color: #EDE8DC; padding: 20px; border-radius: 8px; border: 1px solid #A5B68D;">
+                <h3 style="margin-bottom: 20px; color: #685752;">Hasil Enkripsi</h3>
+                <div style="margin-bottom: 20px;">
+                    <p><strong style="color: #A5B68D;">Private Key:</strong> p = {{ encryption_result.private_key.p }}, q = {{ encryption_result.private_key.q }}</p>
+                    <p><strong style="color: #A5B68D;">Public Key:</strong> n = {{ encryption_result.public_key.n }}</p>
+                </div>
+                <h4 style="color: #A5B68D; margin-bottom: 10px;">Pesan Terenkripsi:</h4>
+                <table style="width: 100%; border-collapse: collapse; background-color: #FFF;">
+                    <thead>
+                        <tr style="background-color: #C1CFA1; color: #FFF;">
+                            <th style="padding: 10px; border: 1px solid #A5B68D;">Karakter</th>
+                            <th style="padding: 10px; border: 1px solid #A5B68D;">m</th>
+                            <th style="padding: 10px; border: 1px solid #A5B68D;">Ciphertext</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in encryption_result.encrypted_message %}
+                        <tr style="text-align: center; border: 1px solid #A5B68D;">
+                            <td style="padding: 10px;">{{ item.0 }}</td>
+                            <td style="padding: 10px;">{{ item.1 }}</td>
+                            <td style="padding: 10px;">{{ item.2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
+        
         {% endif %}
 
         <hr>
@@ -155,18 +189,33 @@
         </form>
 
         {% if decryption_result %}
-            <div class="results">
-                <h3>Hasil Dekripsi</h3>
+            <div class="results" style="margin-top: 20px; background-color: #EDE8DC; padding: 20px; border-radius: 8px; border: 1px solid #A5B68D;">
+                <h3 style="margin-bottom: 20px; color: #685752;">Hasil Dekripsi</h3>
                 {% if decryption_result.error %}
-                    <p style="color: red;">{{ decryption_result.error }}</p>
+                    <p style="color: #E7CCCC; font-weight: bold; background-color: #FFF; border: 1px solid #E7CCCC; padding: 10px; border-radius: 5px;">
+                        {{ decryption_result.error }}
+                    </p>
                 {% else %}
-                    <p><strong>Pesan Asli:</strong> {{ decryption_result.original_message }}</p>
-                    <h4>Detail Dekripsi:</h4>
-                    <ul>
-                        {% for detail in decryption_result.details %}
-                            <li>Posisi: {{ forloop.counter }}, Ciphertext: {{ detail }}</li>
-                        {% endfor %}
-                    </ul>
+                    <div style="margin-bottom: 20px; border: 1px solid #C1CFA1; padding: 10px; border-radius: 5px; background-color: #FFF;">
+                        <p><span class="highlight" style="color: #A5B68D;">Pesan Asli:</span> <strong>{{ decryption_result.original_message }}</strong></p>
+                    </div>
+                    <h4 style="margin-bottom: 10px; color: #A5B68D;">Detail Dekripsi:</h4>
+                    <table style="width: 100%; border-collapse: collapse; background-color: #FFF;">
+                        <thead>
+                            <tr style="background-color: #C1CFA1; color: #FFF;">
+                                <th style="padding: 10px; border: 1px solid #A5B68D;">Posisi</th>
+                                <th style="padding: 10px; border: 1px solid #A5B68D;">Ciphertext</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detail in decryption_result.details %}
+                            <tr style="text-align: center; border: 1px solid #A5B68D;">
+                                <td style="padding: 10px;">{{ forloop.counter }}</td>
+                                <td style="padding: 10px;">{{ detail }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 {% endif %}
             </div>
         {% endif %}
@@ -182,12 +231,16 @@
         </form>
 
         {% if brute_force_result %}
-            <div class="results">
-                <h3>Hasil Faktorisasi</h3>
+            <div class="results" style="margin-top: 20px; background-color: #EDE8DC; padding: 20px; border-radius: 8px; border: 1px solid #A5B68D;">
+                <h3 style="margin-bottom: 20px; color: #685752;">Hasil Faktorisasi</h3>
                 {% if brute_force_result.error %}
-                    <p style="color: red;">{{ brute_force_result.error }}</p>
+                    <p style="color: #E7CCCC; font-weight: bold; background-color: #FFF; border: 1px solid #E7CCCC; padding: 10px; border-radius: 5px;">
+                        {{ brute_force_result.error }}
+                    </p>
                 {% else %}
-                    <p><strong>p:</strong> {{ brute_force_result.p }}, <strong>q:</strong> {{ brute_force_result.q }}</p>
+                    <div style="margin-bottom: 20px; border: 1px solid #C1CFA1; padding: 10px; border-radius: 5px; background-color: #FFF;">
+                        <p><strong style="color: #A5B68D;">p:</strong> {{ brute_force_result.p }}, <strong style="color: #A5B68D;">q:</strong> {{ brute_force_result.q }}</p>
+                    </div>
                 {% endif %}
             </div>
         {% endif %}
