@@ -1,9 +1,7 @@
 import random
 import math
 from django.shortcuts import render
-from django.http import JsonResponse
 from django import forms
-from django.shortcuts import redirect
 
 # Helper Functions
 def checkPrimeFermat(p):
@@ -35,6 +33,14 @@ def generateTwoPrime(bit_length):
     else:
         return generateTwoPrime(bit_length)
 
+def extendedEuclidean(a, b):
+    if a == 0:
+        return b, 0, 1
+    gcd, x1, y1 = extendedEuclidean(b % a, a)
+    x = y1 - (b // a) * x1
+    y = x1
+    return gcd, x, y
+
 def encrypt_message(message, n):
     results = []
     for char in message:
@@ -46,6 +52,34 @@ def encrypt_message(message, n):
         results.append((char, m, c))
     return results
 
+def decrypt_message(ciphertexts, p, q, n):
+    gcd, yp, yq = extendedEuclidean(p, q)
+
+    decrypted_results = []
+    for c in ciphertexts:
+        mp = pow(c, (p + 1) // 4, p)
+        mq = pow(c, (q + 1) // 4, q)
+
+        v = yp * p * mq
+        w = yq * q * mp
+
+        r = (v + w) % n
+        s = (v - w) % n
+        t = (-v + w) % n
+        u = (-v - w) % n
+
+        decrypted_results.extend([r, s, t, u])
+
+    symmetric_results = []
+    for value in decrypted_results:
+        binary_str = bin(value)[2:]
+        half_len = len(binary_str) // 2
+        if binary_str[:half_len] == binary_str[half_len:]:
+            symmetric_results.append(int(binary_str[:half_len], 2))
+
+    decrypted_message = ''.join(chr(value) for value in symmetric_results)
+    return decrypted_message
+
 def brute_force(n):
     for p in range(3, int(math.sqrt(n)) + 1, 2):
         if n % p == 0:
@@ -53,55 +87,164 @@ def brute_force(n):
             return p, q
     return None, None
 
-# Django Form untuk input data
+# Django Forms
 class EncryptionForm(forms.Form):
     bit_length = forms.IntegerField(label="Digit Panjang Bit (Contoh: 15)", min_value=2)
     message = forms.CharField(label="Pesan untuk Enkripsi", max_length=255)
-    
+
 class BruteForceForm(forms.Form):
     n = forms.IntegerField(label="Masukkan nilai n", min_value=2)
 
+# def index(request):
+#     encryption_form = EncryptionForm(prefix="encryption")
+#     brute_force_form = BruteForceForm(prefix="brute")
+
+#     encryption_result = None
+#     brute_force_result = None
+#     decryption_result = None
+
+#     if request.method == "POST":
+#         if "encryption_submit" in request.POST:
+#             encryption_form = EncryptionForm(request.POST, prefix="encryption")
+#             if encryption_form.is_valid():
+#                 bit_length = encryption_form.cleaned_data['bit_length']
+#                 message = encryption_form.cleaned_data['message']
+
+#                 p, q, n = generateTwoPrime(bit_length)
+#                 encrypted_message = encrypt_message(message, n)
+
+#                 encryption_result = {
+#                     "private_key": {"p": p, "q": q},
+#                     "public_key": {"n": n},
+#                     "encrypted_message": encrypted_message
+#                 }
+
+#         elif "decryption_submit" in request.POST:
+#                 # Ambil data dari form
+#                 p = request.POST.get("p")
+#                 q = request.POST.get("q")
+#                 n = request.POST.get("n")
+#                 encrypted_message = request.POST.get("encrypted_message")
+
+#                 # Validasi input
+#                 if not all([p, q, n, encrypted_message]):
+#                     return render(request, 'index.html', {
+#                         'error': "Semua field harus diisi untuk dekripsi.",
+#                         'encryption_form': encryption_form,
+#                         'brute_force_form': brute_force_form,
+#                     })
+
+#                 try:
+#                     p = int(p)
+#                     q = int(q)
+#                     n = int(n)
+#                     ciphertexts = list(map(int, encrypted_message.split(',')))
+#                 except ValueError:
+#                     return render(request, 'index.html', {
+#                         'error': "Input tidak valid. Pastikan p, q, n adalah angka, dan ciphertexts adalah angka yang dipisahkan koma.",
+#                         'encryption_form': encryption_form,
+#                         'brute_force_form': brute_force_form,
+#                     })
+
+#                 # Proses dekripsi
+#                 decrypted_message = decrypt_message(ciphertexts, p, q, n)
+
+#                 decryption_result = {
+#                     "original_message": decrypted_message,
+#                     "details": ciphertexts
+#                 }
+#                 print("Decryption Result:", decryption_result)
+
+#         elif "brute_force_submit" in request.POST:
+#             brute_force_form = BruteForceForm(request.POST, prefix="brute")
+#             if brute_force_form.is_valid():
+#                 n = brute_force_form.cleaned_data['n']
+#                 p, q = brute_force(n)
+
+#                 brute_force_result = {
+#                     "p": p,
+#                     "q": q
+#                 } if p and q else {"error": "Tidak dapat menemukan faktor p dan q."}
+
+#     return render(request, 'index.html', {
+#         'encryption_form': encryption_form,
+#         'brute_force_form': brute_force_form,
+#         'encryption_result': encryption_result,
+#         'decryption_result': decryption_result,
+#         'brute_force_result': brute_force_result
+#     })
+# Django Views (perbaikan untuk dekripsi dari hasil enkripsi)
 def index(request):
-    # Inisialisasi form
     encryption_form = EncryptionForm(prefix="encryption")
     brute_force_form = BruteForceForm(prefix="brute")
 
-    # Hasil proses form
     encryption_result = None
+    decryption_result = None
     brute_force_result = None
 
     if request.method == "POST":
         if "encryption_submit" in request.POST:
+            # Proses Enkripsi
             encryption_form = EncryptionForm(request.POST, prefix="encryption")
             if encryption_form.is_valid():
                 bit_length = encryption_form.cleaned_data['bit_length']
                 message = encryption_form.cleaned_data['message']
 
-                # Generate keys dan hasil enkripsi
+                # Generate kunci dan enkripsi pesan
                 p, q, n = generateTwoPrime(bit_length)
                 encrypted_message = encrypt_message(message, n)
 
                 encryption_result = {
                     "private_key": {"p": p, "q": q},
                     "public_key": {"n": n},
-                    "encrypted_message": encrypted_message
+                    "encrypted_message": encrypted_message,
                 }
 
+        elif "decryption_submit" in request.POST:
+            # Proses Dekripsi
+            p = request.POST.get("p")
+            q = request.POST.get("q")
+            n = request.POST.get("n")
+            encrypted_message_raw = request.POST.get("encrypted_message")
+
+            if not all([p, q, n, encrypted_message_raw]):
+                decryption_result = {"error": "Semua field harus diisi!"}
+            else:
+                try:
+                    # Konversi nilai
+                    p = int(p)
+                    q = int(q)
+                    n = int(n)
+                    ciphertexts = [int(c) for c in encrypted_message_raw.split(",")]
+
+                    # Dekripsi pesan
+                    decrypted_message = decrypt_message(ciphertexts, p, q, n)
+
+                    decryption_result = {
+                        "original_message": decrypted_message,
+                        "details": ciphertexts,
+                    }
+                except ValueError:
+                    decryption_result = {"error": "Masukkan angka yang valid untuk p, q, n, dan ciphertext!"}
+                except Exception as e:
+                    decryption_result = {"error": f"Terjadi kesalahan selama dekripsi: {str(e)}"}
+
         elif "brute_force_submit" in request.POST:
+            # Proses Brute Force
             brute_force_form = BruteForceForm(request.POST, prefix="brute")
             if brute_force_form.is_valid():
                 n = brute_force_form.cleaned_data['n']
                 p, q = brute_force(n)
 
                 brute_force_result = {
-                    "p": p, 
-                    "q": q
+                    "p": p,
+                    "q": q,
                 } if p and q else {"error": "Tidak dapat menemukan faktor p dan q."}
 
-    # Render halaman dengan hasil form
     return render(request, 'index.html', {
         'encryption_form': encryption_form,
         'brute_force_form': brute_force_form,
         'encryption_result': encryption_result,
-        'brute_force_result': brute_force_result
+        'decryption_result': decryption_result,
+        'brute_force_result': brute_force_result,
     })

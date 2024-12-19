@@ -2,17 +2,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Enkripsi & Brute Force</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enkripsi, Dekripsi & Brute Force</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1, h2 { color: #333; }
-        form { margin-bottom: 20px; }
-        button { background-color: #4CAF50; color: white; border: none; padding: 10px; cursor: pointer; }
-        button:hover { background-color: #45a049; }
-        .results { margin-top: 20px; padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        hr {
+            margin: 30px 0;
+            border: 1px solid #ddd;
+        }
     </style>
 </head>
 <body>
+
+    <h1>Enkripsi, Dekripsi & Brute Force Faktorisasi</h1>
 
     <!-- Form Enkripsi -->
     <h2>Enkripsi Pesan</h2>
@@ -38,6 +79,44 @@
 
     <hr>
 
+    <!-- Form Dekripsi -->
+    <h2>Dekripsi Pesan</h2>
+    <form method="post" autocomplete="off">
+        {% csrf_token %}
+        <label for="p">Private Key p:</label>
+        <input type="text" name="p" id="p" required>
+
+        <label for="q">Private Key q:</label>
+        <input type="text" name="q" id="q" required>
+
+        <label for="n">Public Key n:</label>
+        <input type="text" name="n" id="n" required>
+
+        <label for="encrypted_message">Ciphertexts (Pisahkan dengan koma):</label>
+        <textarea name="encrypted_message" id="encrypted_message" rows="4" required></textarea>
+
+        <button type="submit" name="decryption_submit">Dekripsi</button>
+    </form>
+
+    {% if decryption_result %}
+        <div class="results">
+            <h3>Hasil Dekripsi</h3>
+            {% if decryption_result.error %}
+                <p style="color: red;">{{ decryption_result.error }}</p>
+            {% else %}
+                <p><strong>Pesan Asli:</strong> {{ decryption_result.original_message }}</p>
+                <h4>Detail Dekripsi:</h4>
+                <ul>
+                    {% for detail in decryption_result.details %}
+                        <li>Posisi: {{ forloop.counter }}, Ciphertext: {{ detail }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <hr>
+
     <!-- Form Brute Force -->
     <h2>Brute Force Faktorisasi</h2>
     <form method="post" autocomplete="off">
@@ -50,11 +129,12 @@
         <div class="results">
             <h3>Hasil Faktorisasi</h3>
             {% if brute_force_result.error %}
-                <p>{{ brute_force_result.error }}</p>
+                <p style="color: red;">{{ brute_force_result.error }}</p>
             {% else %}
                 <p><strong>p:</strong> {{ brute_force_result.p }}, <strong>q:</strong> {{ brute_force_result.q }}</p>
             {% endif %}
         </div>
     {% endif %}
+
 </body>
 </html>
