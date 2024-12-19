@@ -35,6 +35,14 @@ def generateTwoPrime(bit_length):
     else:
         return generateTwoPrime(bit_length)
 
+def extendedEuclidean(a, b):
+    if a == 0:
+        return b, 0, 1
+    gcd, x1, y1 = extendedEuclidean(b % a, a)
+    x = y1 - (b // a) * x1
+    y = x1
+    return gcd, x, y
+
 def encrypt_message(message, n):
     results = []
     for char in message:
@@ -45,6 +53,34 @@ def encrypt_message(message, n):
         c = pow(m, 2, n)
         results.append((char, m, c))
     return results
+
+def decrypt_message(ciphertexts, p, q, n):
+    gcd, yp, yq = extendedEuclidean(p, q)
+
+    decrypted_results = []
+    for c in ciphertexts:
+        mp = pow(c, (p + 1) // 4, p)
+        mq = pow(c, (q + 1) // 4, q)
+
+        v = yp * p * mq
+        w = yq * q * mp
+
+        r = (v + w) % n
+        s = (v - w) % n
+        t = (-v + w) % n
+        u = (-v - w) % n
+
+        decrypted_results.extend([r, s, t, u])
+    print("Decrypted Results:", decrypted_results)
+    symmetric_results = []
+    for value in decrypted_results:
+        binary_str = bin(value)[2:]
+        half_len = len(binary_str) // 2
+        if binary_str[:half_len] == binary_str[half_len:]:
+            symmetric_results.append(int(binary_str[:half_len], 2))
+    print("Symmetric Results:", symmetric_results)
+    decrypted_message = ''.join(chr(value) for value in symmetric_results)
+    return decrypted_message
 
 def brute_force(n):
     for p in range(3, int(math.sqrt(n)) + 1, 2):
@@ -68,6 +104,7 @@ def index(request):
 
     # Hasil proses form
     encryption_result = request.session.get('encryption_result', None)
+    decryption_result = request.session.get('decryption_result', None)
     brute_force_result = None
 
     if request.method == "POST":
@@ -89,6 +126,37 @@ def index(request):
                 
                 request.session['encryption_result'] = encryption_result
 
+        elif "decryption_submit" in request.POST:
+            # Proses Dekripsi
+            p = request.POST.get("p")
+            q = request.POST.get("q")
+            n = request.POST.get("n")
+            encrypted_message_raw = request.POST.get("encrypted_message")
+
+            if not all([p, q, n, encrypted_message_raw]):
+                decryption_result = {"error": "Semua field harus diisi!"}
+            else:
+                try:
+                    # Konversi nilai
+                    p = int(p)
+                    q = int(q)
+                    n = int(n)
+                    ciphertexts = [int(c.strip()) for c in encrypted_message_raw.split(",") if c.strip().isdigit()]
+                    # ciphertexts = [int(c) for c in encrypted_message_raw.split(",")]
+
+                    # Dekripsi pesan
+                    decrypted_message = decrypt_message(ciphertexts, p, q, n)
+
+                    decryption_result = {
+                        "original_message": decrypted_message,
+                        "details": ciphertexts,
+                    }
+                    request.session['decryption_result'] = decryption_result
+                except ValueError:
+                    decryption_result = {"error": "Masukkan angka yang valid untuk p, q, n, dan ciphertext!"}
+                except Exception as e:
+                    decryption_result = {"error": f"Terjadi kesalahan selama dekripsi: {str(e)}"}
+            
         elif "brute_force_submit" in request.POST:
             brute_force_form = BruteForceForm(request.POST, prefix="brute")
             if brute_force_form.is_valid():
@@ -105,5 +173,6 @@ def index(request):
         'encryption_form': encryption_form,
         'brute_force_form': brute_force_form,
         'encryption_result': encryption_result,
+        'decryption_result': decryption_result,
         'brute_force_result': brute_force_result
     })
