@@ -89,11 +89,11 @@ def brute_force(n):
 
 # Django Forms
 class EncryptionForm(forms.Form):
-    bit_length = forms.IntegerField(label="Digit Panjang Bit (Contoh: 15)", min_value=2)
+    bit_length = forms.IntegerField(label="Digit Panjang Bit (Contoh: 15)", min_value=8)
     message = forms.CharField(label="Pesan untuk Enkripsi", max_length=255)
 
 class BruteForceForm(forms.Form):
-    n = forms.IntegerField(label="Masukkan nilai n", min_value=2)
+    n = forms.IntegerField(label="Masukkan nilai n", min_value=77)
 
 def index(request):
     encryption_form = EncryptionForm(prefix="encryption")
