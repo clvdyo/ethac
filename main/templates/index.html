@@ -3,138 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enkripsi, Dekripsi & Brute Force</title>
+    <title>Encrypt, Decrypt & Brute Force Cryptanalysis Rabin Modify</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+        /* Reset CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            margin: 20px;
+            padding: 20px;
+        }
+
         h1, h2 {
             color: #333;
-        }
-        form {
             margin-bottom: 20px;
+            text-align: center;
         }
-        label {
-            display: block;
-            margin-top: 10px;
+
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        form label {
             font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
         }
-        input, textarea {
+
+        form input, form textarea {
             width: 100%;
-            padding: 8px;
-            margin-top: 5px;
+            padding: 10px;
             margin-bottom: 15px;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
             border-radius: 4px;
+            font-size: 16px;
         }
-        button {
+
+        form button {
             background-color: #4CAF50;
             color: white;
+            padding: 10px 15px;
+            font-size: 16px;
             border: none;
-            padding: 10px;
-            cursor: pointer;
             border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
-        button:hover {
+
+        form button:hover {
             background-color: #45a049;
         }
+
         .results {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            background-color: #f9f9f9;
         }
+
+        .results h3 {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .results ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .results ul li {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #333;
+        }
+
         hr {
+            border: none;
+            height: 1px;
+            background: #ddd;
             margin: 30px 0;
-            border: 1px solid #ddd;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Encrypt, Decrypt & Brute Force Cryptanalysis Rabin Modify</h1>
 
-    <h1>Enkripsi, Dekripsi & Brute Force Faktorisasi</h1>
+        <!-- Form Enkripsi -->
+        <h2>Enkripsi Pesan</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ encryption_form.as_p }}
+            <button type="submit" name="encryption_submit">Generate Keys & Enkripsi</button>
+        </form>
 
-    <!-- Form Enkripsi -->
-    <h2>Enkripsi Pesan</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ encryption_form.as_p }}
-        <button type="submit" name="encryption_submit">Generate Keys & Enkripsi</button>
-    </form>
-
-    {% if encryption_result %}
-        <div class="results">
-            <h3>Hasil Enkripsi</h3>
-            <p><strong>Private Key:</strong> p = {{ encryption_result.private_key.p }}, q = {{ encryption_result.private_key.q }}</p>
-            <p><strong>Public Key:</strong> n = {{ encryption_result.public_key.n }}</p>
-            <h4>Pesan Terenkripsi:</h4>
-            <ul>
-                {% for item in encryption_result.encrypted_message %}
-                    <li>Karakter: {{ item.0 }}, m: {{ item.1 }}, Ciphertext: {{ item.2 }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-    {% endif %}
-
-    <hr>
-
-    <!-- Form Dekripsi -->
-    <h2>Dekripsi Pesan</h2>
-    <form method="post" autocomplete="off">
-        {% csrf_token %}
-        <label for="p">Private Key p:</label>
-        <input type="text" name="p" id="p" required>
-
-        <label for="q">Private Key q:</label>
-        <input type="text" name="q" id="q" required>
-
-        <label for="n">Public Key n:</label>
-        <input type="text" name="n" id="n" required>
-
-        <label for="encrypted_message">Ciphertexts (Pisahkan dengan koma):</label>
-        <textarea name="encrypted_message" id="encrypted_message" rows="4" required></textarea>
-
-        <button type="submit" name="decryption_submit">Dekripsi</button>
-    </form>
-
-    {% if decryption_result %}
-        <div class="results">
-            <h3>Hasil Dekripsi</h3>
-            {% if decryption_result.error %}
-                <p style="color: red;">{{ decryption_result.error }}</p>
-            {% else %}
-                <p><strong>Pesan Asli:</strong> {{ decryption_result.original_message }}</p>
-                <h4>Detail Dekripsi:</h4>
+        {% if encryption_result %}
+            <div class="results">
+                <h3>Hasil Enkripsi</h3>
+                <p><strong>Private Key:</strong> p = {{ encryption_result.private_key.p }}, q = {{ encryption_result.private_key.q }}</p>
+                <p><strong>Public Key:</strong> n = {{ encryption_result.public_key.n }}</p>
+                <h4>Pesan Terenkripsi:</h4>
                 <ul>
-                    {% for detail in decryption_result.details %}
-                        <li>Posisi: {{ forloop.counter }}, Ciphertext: {{ detail }}</li>
+                    {% for item in encryption_result.encrypted_message %}
+                        <li>Karakter: {{ item.0 }}, m: {{ item.1 }}, Ciphertext: {{ item.2 }}</li>
                     {% endfor %}
                 </ul>
-            {% endif %}
-        </div>
-    {% endif %}
+            </div>
+        {% endif %}
 
-    <hr>
+        <hr>
 
-    <!-- Form Brute Force -->
-    <h2>Brute Force Faktorisasi</h2>
-    <form method="post" autocomplete="off">
-        {% csrf_token %}
-        {{ brute_force_form.as_p }}
-        <button type="submit" name="brute_force_submit">Faktorisasi</button>
-    </form>
+        <!-- Form Dekripsi -->
+        <h2>Dekripsi Pesan</h2>
+        <form method="post" autocomplete="off">
+            {% csrf_token %}
+            <label for="p">Private Key p:</label>
+            <input type="text" name="p" id="p" required>
 
-    {% if brute_force_result %}
-        <div class="results">
-            <h3>Hasil Faktorisasi</h3>
-            {% if brute_force_result.error %}
-                <p style="color: red;">{{ brute_force_result.error }}</p>
-            {% else %}
-                <p><strong>p:</strong> {{ brute_force_result.p }}, <strong>q:</strong> {{ brute_force_result.q }}</p>
-            {% endif %}
-        </div>
-    {% endif %}
+            <label for="q">Private Key q:</label>
+            <input type="text" name="q" id="q" required>
 
+            <label for="n">Public Key n:</label>
+            <input type="text" name="n" id="n" required>
+
+            <label for="encrypted_message">Ciphertexts (Pisahkan dengan koma):</label>
+            <textarea name="encrypted_message" id="encrypted_message" rows="4" required></textarea>
+
+            <button type="submit" name="decryption_submit">Dekripsi</button>
+        </form>
+
+        {% if decryption_result %}
+            <div class="results">
+                <h3>Hasil Dekripsi</h3>
+                {% if decryption_result.error %}
+                    <p style="color: red;">{{ decryption_result.error }}</p>
+                {% else %}
+                    <p><strong>Pesan Asli:</strong> {{ decryption_result.original_message }}</p>
+                    <h4>Detail Dekripsi:</h4>
+                    <ul>
+                        {% for detail in decryption_result.details %}
+                            <li>Posisi: {{ forloop.counter }}, Ciphertext: {{ detail }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <hr>
+
+        <!-- Form Brute Force -->
+        <h2>Brute Force Faktorisasi</h2>
+        <form method="post" autocomplete="off">
+            {% csrf_token %}
+            {{ brute_force_form.as_p }}
+            <button type="submit" name="brute_force_submit">Faktorisasi</button>
+        </form>
+
+        {% if brute_force_result %}
+            <div class="results">
+                <h3>Hasil Faktorisasi</h3>
+                {% if brute_force_result.error %}
+                    <p style="color: red;">{{ brute_force_result.error }}</p>
+                {% else %}
+                    <p><strong>p:</strong> {{ brute_force_result.p }}, <strong>q:</strong> {{ brute_force_result.q }}</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <footer>
+            © Ethical Hacking KOM A 2024
+        </footer>
+    </div>
 </body>
 </html>

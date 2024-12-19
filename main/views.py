@@ -95,91 +95,12 @@ class EncryptionForm(forms.Form):
 class BruteForceForm(forms.Form):
     n = forms.IntegerField(label="Masukkan nilai n", min_value=2)
 
-# def index(request):
-#     encryption_form = EncryptionForm(prefix="encryption")
-#     brute_force_form = BruteForceForm(prefix="brute")
-
-#     encryption_result = None
-#     brute_force_result = None
-#     decryption_result = None
-
-#     if request.method == "POST":
-#         if "encryption_submit" in request.POST:
-#             encryption_form = EncryptionForm(request.POST, prefix="encryption")
-#             if encryption_form.is_valid():
-#                 bit_length = encryption_form.cleaned_data['bit_length']
-#                 message = encryption_form.cleaned_data['message']
-
-#                 p, q, n = generateTwoPrime(bit_length)
-#                 encrypted_message = encrypt_message(message, n)
-
-#                 encryption_result = {
-#                     "private_key": {"p": p, "q": q},
-#                     "public_key": {"n": n},
-#                     "encrypted_message": encrypted_message
-#                 }
-
-#         elif "decryption_submit" in request.POST:
-#                 # Ambil data dari form
-#                 p = request.POST.get("p")
-#                 q = request.POST.get("q")
-#                 n = request.POST.get("n")
-#                 encrypted_message = request.POST.get("encrypted_message")
-
-#                 # Validasi input
-#                 if not all([p, q, n, encrypted_message]):
-#                     return render(request, 'index.html', {
-#                         'error': "Semua field harus diisi untuk dekripsi.",
-#                         'encryption_form': encryption_form,
-#                         'brute_force_form': brute_force_form,
-#                     })
-
-#                 try:
-#                     p = int(p)
-#                     q = int(q)
-#                     n = int(n)
-#                     ciphertexts = list(map(int, encrypted_message.split(',')))
-#                 except ValueError:
-#                     return render(request, 'index.html', {
-#                         'error': "Input tidak valid. Pastikan p, q, n adalah angka, dan ciphertexts adalah angka yang dipisahkan koma.",
-#                         'encryption_form': encryption_form,
-#                         'brute_force_form': brute_force_form,
-#                     })
-
-#                 # Proses dekripsi
-#                 decrypted_message = decrypt_message(ciphertexts, p, q, n)
-
-#                 decryption_result = {
-#                     "original_message": decrypted_message,
-#                     "details": ciphertexts
-#                 }
-#                 print("Decryption Result:", decryption_result)
-
-#         elif "brute_force_submit" in request.POST:
-#             brute_force_form = BruteForceForm(request.POST, prefix="brute")
-#             if brute_force_form.is_valid():
-#                 n = brute_force_form.cleaned_data['n']
-#                 p, q = brute_force(n)
-
-#                 brute_force_result = {
-#                     "p": p,
-#                     "q": q
-#                 } if p and q else {"error": "Tidak dapat menemukan faktor p dan q."}
-
-#     return render(request, 'index.html', {
-#         'encryption_form': encryption_form,
-#         'brute_force_form': brute_force_form,
-#         'encryption_result': encryption_result,
-#         'decryption_result': decryption_result,
-#         'brute_force_result': brute_force_result
-#     })
-# Django Views (perbaikan untuk dekripsi dari hasil enkripsi)
 def index(request):
     encryption_form = EncryptionForm(prefix="encryption")
     brute_force_form = BruteForceForm(prefix="brute")
 
-    encryption_result = None
-    decryption_result = None
+    encryption_result = request.session.get('encryption_result', None)
+    decryption_result = request.session.get('decryption_result', None)
     brute_force_result = None
 
     if request.method == "POST":
@@ -199,6 +120,7 @@ def index(request):
                     "public_key": {"n": n},
                     "encrypted_message": encrypted_message,
                 }
+                request.session['encryption_result'] = encryption_result
 
         elif "decryption_submit" in request.POST:
             # Proses Dekripsi
@@ -224,6 +146,7 @@ def index(request):
                         "original_message": decrypted_message,
                         "details": ciphertexts,
                     }
+                    request.session['decryption_result'] = decryption_result
                 except ValueError:
                     decryption_result = {"error": "Masukkan angka yang valid untuk p, q, n, dan ciphertext!"}
                 except Exception as e:
