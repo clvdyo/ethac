@@ -2,59 +2,346 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Enkripsi & Brute Force</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modified Rabin Cryptosystem</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1, h2 { color: #333; }
-        form { margin-bottom: 20px; }
-        button { background-color: #4CAF50; color: white; border: none; padding: 10px; cursor: pointer; }
-        button:hover { background-color: #45a049; }
-        .results { margin-top: 20px; padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; }
+        /* Body Style */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #eafaf1, #d4ebe8);
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+    
+        /* Header Style */
+        header {
+            background-color: #286c57;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.8em;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+    
+        /* Main Section Style */
+        main {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+    
+        section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+    
+        section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.25);
+        }
+    
+        /* Form Section Style */
+        h2 {
+            border-bottom: 3px solid #286c57;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            color: #286c57;
+            font-size: 1.5em;
+        }
+    
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+    
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+    
+        .form-group label {
+            font-size: 1em;
+            font-weight: bold;
+            color: #555;
+        }
+    
+        .form-group input,
+        .form-group textarea {
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: #f9f9f9;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+    
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #286c57;
+            outline: none;
+            box-shadow: 0 0 6px rgba(40, 108, 87, 0.5);
+        }
+    
+        button {
+            background-color: #286c57;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+    
+        button:hover {
+            background-color: #368f6b;
+            transform: scale(1.05);
+        }
+    
+        /* Results Section */
+        .results {
+            background-color: #f9f9f9;
+            border-left: 5px solid #286c57;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    
+        .results h3 {
+            font-size: 1.2em;
+            color: #286c57;
+            margin-bottom: 10px;
+        }
+    
+        /* Table Style */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.95em;
+        }
+    
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+    
+        th, td {
+            padding: 12px;
+            text-align: center; /* Center alignment for text */
+            vertical-align: middle;
+        }
+    
+        th {
+            background-color: #f7f7f7;
+            color: #286c57;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+    
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    
+        tbody tr:hover {
+            background-color: #eef6f4;
+        }
+    
+        /* Footer Style */
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #286c57;
+            color: white;
+            font-size: 0.9em;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.2);
+        }
+    
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            header {
+                font-size: 1.4em;
+            }
+    
+            h2 {
+                font-size: 1.3em;
+            }
+    
+            .form-group input,
+            .form-group textarea,
+            button {
+                width: 100%; /* Full width on smaller screens */
+            }
+    
+            button {
+                align-self: center; /* Center align button on smaller screens */
+            }
+        }
     </style>
 </head>
 <body>
+    <header>
+        Modified Rabin Cryptosystem
+    </header>
 
-    <!-- Form Enkripsi -->
-    <h2>Enkripsi Pesan</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ encryption_form.as_p }}
-        <button type="submit" name="encryption_submit">Generate Keys & Enkripsi</button>
-    </form>
+    <main>
+        <!-- Form Enkripsi -->
+        <!-- <section>
+            <h2>Enkripsi Pesan</h2>
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_bit_length">Digit Panjang Bit (Contoh: 15):</label>
+                    <input type="number" name="bit_length" id="id_bit_length" min="8" max="255" placeholder="Masukkan panjang bit" required>
+                </div>
+        
+                <div class="form-group">
+                    <label for="id_message">Pesan untuk Enkripsi:</label>
+                    <textarea name="message" id="id_message" placeholder="Masukkan pesan yang akan dienkripsi" required maxlength="255"></textarea>
+                </div>
+        
+                <button type="submit" name="encryption_submit">Generate Keys & Enkripsi</button>
+            </form>
+            
+            {% if encryption_result %}
+            <div class="results">
+                <h3>Hasil Enkripsi</h3>
+                <table>
+                    <tr>
+                        <th>Private Key</th>
+                        <td>p = {{ encryption_result.private_key.p }}, q = {{ encryption_result.private_key.q }}</td>
+                    </tr>
+                    <tr>
+                        <th>Public Key</th>
+                        <td>n = {{ encryption_result.public_key.n }}</td>
+                    </tr>
+                </table>
 
-    {% if encryption_result %}
-        <div class="results">
-            <h3>Hasil Enkripsi</h3>
-            <p><strong>Private Key:</strong> p = {{ encryption_result.private_key.p }}, q = {{ encryption_result.private_key.q }}</p>
-            <p><strong>Public Key:</strong> n = {{ encryption_result.public_key.n }}</p>
-            <h4>Pesan Terenkripsi:</h4>
-            <ul>
-                {% for item in encryption_result.encrypted_message %}
-                    <li>Karakter: {{ item.0 }}, m: {{ item.1 }}, Ciphertext: {{ item.2 }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-    {% endif %}
-
-    <hr>
-
-    <!-- Form Brute Force -->
-    <h2>Brute Force Faktorisasi</h2>
-    <form method="post" autocomplete="off">
-        {% csrf_token %}
-        {{ brute_force_form.as_p }}
-        <button type="submit" name="brute_force_submit">Faktorisasi</button>
-    </form>
-
-    {% if brute_force_result %}
-        <div class="results">
-            <h3>Hasil Faktorisasi</h3>
-            {% if brute_force_result.error %}
-                <p>{{ brute_force_result.error }}</p>
-            {% else %}
-                <p><strong>p:</strong> {{ brute_force_result.p }}, <strong>q:</strong> {{ brute_force_result.q }}</p>
+                <h4>Pesan Terenkripsi:</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Karakter</th>
+                            <th>m</th>
+                            <th>Ciphertext</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in encryption_result.encrypted_message %}
+                        <tr>
+                            <td>{{ item.0 }}</td>
+                            <td>{{ item.1 }}</td>
+                            <td>{{ item.2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% endif %}
-        </div>
-    {% endif %}
+        </section> -->
+
+        <section>
+            <h2>Enkripsi Pesan</h2>
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_bit_length">Digit Panjang Bit (Contoh: 15):</label>
+                    <input type="number" name="bit_length" id="id_bit_length" min="8" max="255" placeholder="Masukkan panjang bit" required>
+                </div>
+        
+                <div class="form-group">
+                    <label for="id_message">Pesan untuk Enkripsi:</label>
+                    <textarea name="message" id="id_message" placeholder="Masukkan pesan yang akan dienkripsi" required maxlength="255"></textarea>
+                </div>
+        
+                <button type="submit" name="encryption_submit">Generate Keys & Enkripsi</button>
+            </form>
+            
+            {% if encryption_result %}
+            <div class="results">
+                <h3>Hasil Enkripsi</h3>
+                <table>
+                    <tr>
+                        <th>Private Key</th>
+                        <td>p = {{ encryption_result.private_key.p }}, q = {{ encryption_result.private_key.q }}</td>
+                    </tr>
+                    <tr>
+                        <th>Public Key</th>
+                        <td>n = {{ encryption_result.public_key.n }}</td>
+                    </tr>
+                </table>
+        
+                <h4>Pesan Terenkripsi:</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Karakter</th>
+                            <th>m</th>
+                            <th>Ciphertext</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for character, m, ciphertext in encryption_result.encrypted_message %}
+                        <tr>
+                            <td>{{ character }}</td>
+                            <td>{{ m }}</td>
+                            <td>{{ ciphertext }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </section>
+        
+        <!-- Form Brute Force -->
+        <section>
+            <h2>Brute Force Faktorisasi</h2>
+            <form method="post" autocomplete="off">
+                {% csrf_token %}
+                {{ brute_force_form.as_p }}
+                <button type="submit" name="brute_force_submit">Faktorisasi</button>
+            </form>
+
+            {% if brute_force_result %}
+            <div class="results">
+                <h3>Hasil Faktorisasi</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>p</th>
+                            <th>q</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ brute_force_result.p }}</td>
+                            <td>{{ brute_force_result.q }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        &copy; 2024 Modified Rabin Cryptosystem
+    </footer>
 </body>
 </html>

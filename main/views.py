@@ -67,7 +67,7 @@ def index(request):
     brute_force_form = BruteForceForm(prefix="brute")
 
     # Hasil proses form
-    encryption_result = None
+    encryption_result = request.session.get('encryption_result', None)
     brute_force_result = None
 
     if request.method == "POST":
@@ -86,6 +86,8 @@ def index(request):
                     "public_key": {"n": n},
                     "encrypted_message": encrypted_message
                 }
+                
+                request.session['encryption_result'] = encryption_result
 
         elif "brute_force_submit" in request.POST:
             brute_force_form = BruteForceForm(request.POST, prefix="brute")
